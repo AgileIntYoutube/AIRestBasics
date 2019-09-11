@@ -3,11 +3,9 @@ package io.agileintlligence.airestbasics.service;
 import io.agileintlligence.airestbasics.exception.BacklogItemNotFoundException;
 import io.agileintlligence.airestbasics.model.BacklogItem;
 import io.agileintlligence.airestbasics.repository.BacklogItemRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-
+@Service
 public class BacklogItemServiceImpl implements BacklogItemService {
 
 
@@ -34,9 +32,19 @@ public class BacklogItemServiceImpl implements BacklogItemService {
     }
 
     @Override
-    public BacklogItem update(Long id, BacklogItem item) {
-        //Handle Exception if BL not found
-        return null;
+    public BacklogItem update(Long id, BacklogItem itemInUpdateRequest) {
+        //Handle Case if BL not found
+        return backlogItemRepository.findById(id).map(
+                itemInDB -> {
+                    itemInDB.setDescription(itemInUpdateRequest.getDescription());
+                    itemInDB.setIssueType(itemInUpdateRequest.getIssueType());
+                    itemInDB.setSummary(itemInUpdateRequest.getSummary());
+                    itemInDB.setStatus(itemInUpdateRequest.getStatus());
+                    return backlogItemRepository.save(itemInDB);
+                }
+        ).orElseGet(()->{
+           return backlogItemRepository.save(itemInUpdateRequest);
+        });
     }
 
     @Override
